@@ -1,11 +1,421 @@
-{
-	"folders": [
-		{
-			"path": "MRTgame"
-		},
-		{
-			"path": "/Users/anishajoseph/Desktop/HacknRoll"
-		}
-	],
-	"settings": {}
-}
+import pygame
+import random
+
+pygame.init()
+
+win = pygame.display.set_mode((1000, 700))
+pygame.display.set_caption("First Game")
+walkRight = [pygame.image.load('R1.png'), pygame.image.load('R2.png'), pygame.image.load('R3.png'), pygame.image.load('R4.png'), pygame.image.load(
+    'R5.png'), pygame.image.load('R6.png'), pygame.image.load('R7.png'), pygame.image.load('R8.png'), pygame.image.load('R9.png')]
+walkLeft = [pygame.image.load('L1.png'), pygame.image.load('L2.png'), pygame.image.load('L3.png'), pygame.image.load('L4.png'), pygame.image.load(
+    'L5.png'), pygame.image.load('L6.png'), pygame.image.load('L7.png'), pygame.image.load('L8.png'), pygame.image.load('L9.png')]
+bg = pygame.image.load('mrt1000x700.png')
+char = pygame.image.load('standing.png')
+
+clock = pygame.time.Clock()
+
+
+class player(object):
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.vel = 10
+        self.left = False
+        self.right = False
+        self.walkCount = 0
+        self.standing = True
+        self.hitbox = (self.x + 17, self.y + 11, 29, 52)
+
+    def draw(self, win):
+
+        if self.walkCount + 1 >= 27:
+            self.walkCount = 0
+        if not(self.standing):
+            if self.left:
+                win.blit(walkLeft[self.walkCount//3], (self.x, self.y))
+                self.walkCount += 1
+            elif self.right:
+                win.blit(walkRight[self.walkCount//3], (self.x, self.y))
+                self.walkCount += 1
+        else:
+            if self.right:
+                win.blit(walkRight[0], (self.x, self.y))
+            else:
+                win.blit(walkLeft[0], (self.x, self.y))
+        self.hitbox = (self.x + 17, self.y + 11, 29, 52)
+        #pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
+
+
+class enemy(object):
+    walkRight = [pygame.image.load('R1E.png'), pygame.image.load('R2E.png'), pygame.image.load('R3E.png'), pygame.image.load('R4E.png'), pygame.image.load('R5E.png'), pygame.image.load(
+        'R6E.png'), pygame.image.load('R7E.png'), pygame.image.load('R8E.png'), pygame.image.load('R9E.png'), pygame.image.load('R10E.png'), pygame.image.load('R11E.png')]
+    walkLeft = [pygame.image.load('L1E.png'), pygame.image.load('L2E.png'), pygame.image.load('L3E.png'), pygame.image.load('L4E.png'), pygame.image.load('L5E.png'), pygame.image.load(
+        'L6E.png'), pygame.image.load('L7E.png'), pygame.image.load('L8E.png'), pygame.image.load('L9E.png'), pygame.image.load('L10E.png'), pygame.image.load('L11E.png')]
+
+    def __init__(self, x, y, width, height, endx, endy, queue):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.endx = endx
+        self.endy = endy
+        self.queue = queue
+        self.path = [self.endx, self.endy]
+        self.walkCount = 0
+        self.vel = 20
+        self.hitbox = (self.x + 17, self.y + 2, 31, 57)
+        self.desig = True
+
+    def draw(self, win):
+        if self.desig:
+            moveToDesignated(self)
+            self.desig = False
+        # enemyBarriers(self)
+        randMove(self)
+        if self.walkCount + 1 >= 33:
+            self.walkCount = 0
+        if self.vel > 0:
+            win.blit(self.walkRight[self.walkCount // 3], (self.x, self.y))
+            self.walkCount += 1
+        else:
+            win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
+            self.walkCount += 1
+        self.hitbox = (self.x + 17, self.y + 2, 31, 57)
+        #pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
+
+
+def moveToDesignated(self):
+    if self.queue == "L1":
+        while self.x < 150:
+            self.x += self.vel
+        while self.y > 200:
+            self.y -= self.vel
+
+    elif self.queue == "R1":
+        while self.x > 180:
+            self.x -= self.vel
+        while self.y > 200:
+            self.y -= self.vel
+
+    elif self.queue == "L2":
+        while self.x < 750:
+            self.x += self.vel
+        while self.y > 200:
+            self.y -= self.vel
+
+    elif self.queue == "R2":
+        while self.x > 750:
+            self.x -= self.vel
+        while self.y > 200:
+            self.y -= self.vel
+
+def randMove(self):
+    rando = random.randint(1, 4)
+    if self.x == self.path[0] and self.y == self.path[1]:
+        self.vel = 0
+    else:
+        if self.vel > 0:
+            if rando == 1 and self.y + self.vel < self.path[1]:
+                self.y += self.vel
+            elif rando == 2 and self.y - self.vel > self.path[1]:
+                self.y -= self.vel
+            elif rando == 3 and self.x + self.vel < self.path[0]:
+                self.x += self.vel
+            elif rando == 4 and self.x - self.vel > self.path[0]:
+                self.x -= self.vel
+        else:
+            if rando == 1 and self.y + self.vel > self.path[1]:
+                self.y += self.vel
+            elif rando == 2 and self.y - self.vel < self.path[1]:
+                self.y -= self.vel
+            elif rando == 3 and self.x + self.vel > self.path[0]:
+                self.x += self.vel
+            elif rando == 4 and self.x - self.vel < self.path[0]:
+                self.x -= self.vel
+
+# barriers only for npc
+
+
+def enemyBarriers(self):
+    if (self.y == 70 or self.y == 700) or (self.x == 0 or self.x == 1000) or (0 < self.y < 140 and self.x == 120) or (0 < self.y < 140 and self.x == 260) or (0 < self.y < 140 and self.x == 740) or (0 < self.y < 140 and self.x == 880) or (230 < self.y < 350 and self.x == 120) or (230 < self.y < 350 and self.x == 260) or (230 < self.y < 350 and self.x == 740) or (230 < self.y < 350 and self.x == 880) or (0 < self.y < 140 and self.x == 70) or (0 < self.y < 140 and self.x == 210) or (0 < self.y < 140 and self.x == 690) or (0 < self.y < 140 and self.x == 820) or (230 < self.y < 350 and self.x == 70) or (230 < self.y < 350 and self.x == 210) or (230 < self.y < 350 and self.x == 690) or (230 < self.y < 350 and self.x == 820) or (self.y == 140 and (70 < self.x < 120 or 210 < self.x < 260 or 690 < self.x < 740 or 820 < self.x < 880)) or (self.y == 300 and (0 < self.x < 110 or 210 < self.x < 720 or 830 < self.x < 1000)) or (self.y == 230 and (70 < self.x < 120 or 210 < self.x < 260 or 690 < self.x < 740 or 820 < self.x < 880)) or (self.y == 300 and (0 < self.x < 110 or 210 < self.x < 720 or 830 < self.x < 1000)):
+        self.vel = self.vel * -1
+
+# what to do when there is a barrier to the left
+
+
+def leftBarrier(self):
+    if (0 < self.y < 140 and self.x == 120) or (0 < self.y < 140 and self.x == 260) or (0 < self.y < 140 and self.x == 740) or (0 < self.y < 140 and self.x == 880) or (230 < self.y < 350 and self.x == 120) or (230 < self.y < 350 and self.x == 260) or (230 < self.y < 350 and self.x == 740) or (230 < self.y < 350 and self.x == 880):
+        self.x -= 0
+    else:
+        self.x -= self.vel
+        self.left = True
+        self.right = False
+
+# what to do when there is a barrier to the right
+
+
+def rightBarrier(self):
+    if (0 < self.y < 140 and self.x == 70) or (0 < self.y < 140 and self.x == 210) or (0 < self.y < 140 and self.x == 690) or (0 < self.y < 140 and self.x == 820) or (230 < self.y < 350 and self.x == 70) or (230 < self.y < 350 and self.x == 210) or (230 < self.y < 350 and self.x == 690) or (230 < self.y < 350 and self.x == 820):
+        self.x -= 0
+    else:
+        self.x += self.vel
+        self.left = True
+        self.right = False
+
+
+# what to do when there is a barrier at the  top
+def upBarrier(self):
+    if (self.y == 140 and (70 < self.x < 120 or 210 < self.x < 260 or 690 < self.x < 740 or 820 < self.x < 880)) or (self.y == 350 and (0 < self.x < 110 or 210 < self.x < 720 or 830 < self.x < 1000)):
+        self.y -= 0
+    else:
+        self.y -= self.vel
+
+# what to do when there is a barrier at the bottom
+
+
+def downBarrier(self):
+    if (self.y == 230 and (70 < self.x < 120 or 210 < self.x < 260 or 690 < self.x < 740 or 820 < self.x < 880)) or (self.y == 300 and (0 < self.x < 110 or 210 < self.x < 720 or 830 < self.x < 1000)):
+        self.y += 0
+    else:
+        self.y += self.vel
+
+
+class chair(object):
+    def __init__(self, a, b, name):
+        self.vacancy = True
+        self.a = a
+        self.b = b
+        self.name = name
+
+
+# isJump = False
+# jumpCount = 10
+left = False
+right = False
+walkCount = 0
+red = (250, 0, 0)
+screen = pygame.display.set_mode()
+
+
+def redrawGameWindow():
+    win.blit(bg, (0, 0))
+    man.draw(win)
+    for i in range(0, 24):
+        goblinList[i].draw(win)
+    
+    pygame.display.update()
+
+
+# mainloop
+man = player(200, 410, 64, 64)
+goblinList = [enemy(100, 600, 64, 64, -20, 60, "L1"),
+enemy(600, 600, 64, 64, 40, 60, "L2"),
+enemy(300, 600, 64, 64, 266, 60, "R1"),
+enemy(800, 600, 64, 64, 300, 60, "R2"),
+enemy(100, 600, 64, 64, 382, 60, "L1"),
+enemy(600, 600, 64, 64, 420, 60, "L2"),
+enemy(300, 600, 64, 64, 502, 60, "R1"),
+enemy(800, 600, 64, 64, 540, 60, "R2"),
+enemy(100, 600, 64, 64, 622, 60, "L1"),
+ enemy(600, 600, 64, 64, 662, 60, "L2"),
+ enemy(300, 600, 64, 64, 882, 60, "R1"),
+ enemy(800, 600, 64, 64, 942, 60, "R2"),
+ enemy(100, 600, 64, 64, -20, 320, "L1"),
+ enemy(600, 600, 64, 64, 40, 320, "L2"),
+ enemy(300, 600, 64, 64, 266, 320, "R1"),
+ enemy(800, 600, 64, 64, 300, 320, "R2"),
+ enemy(100, 600, 64, 64, 382, 320, "L1"),
+ enemy(600, 600, 64, 64, 420, 320, "L2"),
+ enemy(300, 600, 64, 64, 502, 320, "R1"),
+ enemy(800, 600, 64, 64, 540, 320, "R2"),
+ enemy(100, 600, 64, 64, 622, 320, "L1"),
+ enemy(600, 600, 64, 64, 662, 320, "L2"),
+ enemy(300, 600, 64, 64, 882, 320, "R1"),
+ enemy(800, 600, 64, 64, 942, 320, "R2")]
+run = True
+while run:
+    clock.tick(27)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+    keys = pygame.key.get_pressed()
+
+    # 2 seats upper left
+    e = -5
+    f = 70
+    for i in range(2):
+        chair(e, f, i)
+        seat = chair(e, f, i)
+
+        for i in range(0, 24):
+            if ((e < goblinList[i].x + 20 < e + 50) and (f - 50 < goblinList[i].y - 10 < f + 10)):  # get a seat
+                seat.vacancy = False
+
+        if ((e < man.x + 20 < e + 50) and (f - 50 < man.y - 10 < f + 10) and (seat.vacancy == True)):  # get a seat
+            print(seat.name)
+            seat.vacancy = False
+            man.vel = 0
+            break
+        e += 60
+
+    # long seats upper row
+    c = 270
+    d = 70
+    for i in range(9, 17):
+        chair(c, d, i)
+        seat = chair(c, d, i)
+
+        for i in range(0, 24):
+            if ((c < goblinList[i].x + 20 < c + 50) and (d - 50 < goblinList[i].y - 10 < d + 10)):  # get a seat
+                seat.vacancy = False
+
+        if ((c < man.x + 20 < c + 50) and (d - 50 < man.y - 10 < d + 10) and (seat.vacancy == True)):  # get a seat
+            print(seat.name)
+            seat.vacancy = False
+            man.vel = 0
+            break
+        c += 60
+
+    # 2 seats upper right
+    e = 880
+    f = 70
+    for i in range(2):
+        chair(e, f, i)
+        seat = chair(e, f, i)
+
+        for i in range(0, 24):
+            if ((e < goblinList[i].x + 20 < e + 50) and (f - 50 < goblinList[i].y - 10 < f + 10)):  # get a seat
+                seat.vacancy = False
+
+        if ((e < man.x + 20 < e + 50) and (f - 50 < man.y - 10 < f + 10) and (seat.vacancy == True)):  # get a seat
+            print(seat.name)
+            seat.vacancy = False
+            man.vel = 0
+            break
+
+        e += 60
+
+    # 2 seats lower left
+    e = -5
+    f = 300
+    for i in range(2):
+        chair(e, f, i)
+        seat = chair(e, f, i)
+
+        for i in range(0, 24):
+            if ((e < goblinList[i].x + 20 < e + 50) and (f - 50 < goblinList[i].y - 10 < f + 10)):
+                seat.vacancy = False
+
+        if ((e < man.x + 20 < e + 50) and (f - 50 < man.y - 10 < f + 10) and (seat.vacancy == True)):  # get a seat
+            print(seat.name)
+            seat.vacancy = False
+            man.vel = 0
+
+        e += 60
+
+    # long seats lower row
+    a = 270
+    b = 300
+    for i in range(8):
+        chair(a, b, i)
+        seat = chair(a, b, i)
+
+        for i in range(0, 24):
+            if ((a < goblinList[i].x + 20 < a + 50) and (b - 50 < goblinList[i].y - 10 < b + 10)):  # goblin on a seat
+                seat.vacancy = False
+
+        if ((a < man.x + 20 < a + 50) and (b - 50 < man.y - 10 < b + 10) and (seat.vacancy == True)):  # get a seat
+            print(seat.name)
+            seat.vacancy = False
+            man.vel = 0
+            break
+
+        a += 60
+
+    # 2 seats lower right
+    e = 880
+    f = 300
+    for i in range(2):
+        chair(e, f, i)
+        seat = chair(e, f, i)
+
+        for i in range(0, 24):
+            if ((e < goblinList[i].x + 20 < e + 50) and (f - 50 < goblinList[i].y - 10 < f + 10)):  # get a seat
+                seat.vacancy = False
+
+        if ((e < man.x + 20 < e + 50) and (f - 50 < man.y - 10 < f + 10) and (seat.vacancy == True)):  # get a seat
+            print(seat.name)
+            seat.vacancy = False
+            man.vel = 0
+            break
+        e += 60
+
+    if keys[pygame.K_LEFT] and man.x > -10:
+        if 0 < man.y < 140 and man.x == 120:
+            man.x -= 0
+        elif 0 < man.y < 140 and man.x == 260:
+            man.x -= 0
+        elif 0 < man.y < 140 and man.x == 740:
+            man.x -= 0
+        elif 0 < man.y < 140 and man.x == 880:
+            man.x -= 0
+        elif 230 < man.y < 350 and man.x == 120:
+            man.x -= 0
+        elif 230 < man.y < 350 and man.x == 260:
+            man.x -= 0
+        elif 230 < man.y < 350 and man.x == 740:
+            man.x -= 0
+        elif 230 < man.y < 350 and man.x == 880:
+            man.x -= 0
+        else:
+            man.x -= man.vel
+            man.left = True
+            man.right = False
+
+    elif keys[pygame.K_RIGHT] and man.x < 1009 - man.width:
+        if 0 < man.y < 140 and man.x == 70:
+            man.x -= 0
+        elif 0 < man.y < 140 and man.x == 210:
+            man.x -= 0
+        elif 0 < man.y < 140 and man.x == 690:
+            man.x -= 0
+        elif 0 < man.y < 140 and man.x == 820:
+            man.x -= 0
+        elif 230 < man.y < 350 and man.x == 70:
+            man.x -= 0
+        elif 230 < man.y < 350 and man.x == 210:
+            man.x -= 0
+        elif 230 < man.y < 350 and man.x == 690:
+            man.x -= 0
+        elif 230 < man.y < 350 and man.x == 820:
+            man.x -= 0
+        else:
+            man.x += man.vel
+            man.left = True
+            man.right = False
+
+    elif keys[pygame.K_UP] and man.y > man.vel + 60:
+        if man.y == 140 and (70 < man.x < 120 or 210 < man.x < 260 or 690 < man.x < 740 or 820 < man.x < 880):
+            man.y -= 0
+        elif man.y != 350 or 110 < man.x < 210 or 720 < man.x < 830:
+            man.y -= man.vel
+
+    elif keys[pygame.K_DOWN] and man.y < 700 - man.height - man.vel:
+        if man.y == 230 and (70 < man.x < 120 or 210 < man.x < 260 or 690 < man.x < 740 or 820 < man.x < 880):
+            man.y += 0
+        elif man.y != 300 or 110 < man.x < 210 or 720 < man.x < 830:
+            man.y += man.vel
+
+    else:
+        man.right = False
+        man.left = False
+        man.walkCount = 0
+
+
+    redrawGameWindow()
+
+
+pygame.quit()
