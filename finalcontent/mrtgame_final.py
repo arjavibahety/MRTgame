@@ -406,7 +406,7 @@ def gameLoop():
                 break
             e += 60
 
-        # long seats upper row
+        # long seats in upper row
         c = 270
         d = 60
         for i in range (9, 17):
